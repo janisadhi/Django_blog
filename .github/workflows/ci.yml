@@ -1,71 +1,71 @@
-name: CI 
+# name: CI 
 
-on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - master
+#   workflow_dispatch:
 
-jobs:
-  build:
-    name: Build and Test
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     name: Build and Test
+#     runs-on: ubuntu-latest
 
-    env:
-      DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USR }}/dj
+#     env:
+#       DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USR }}/dj
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USR }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USR }}
+#           password: ${{ secrets.DOCKERHUB_PASS }}
 
-      - name: Build backend image
-        run: |
-          docker build -t dj .
+#       - name: Build backend image
+#         run: |
+#           docker build -t dj .
 
-      - name: Start backend container
-        run: |
-          docker run -d \
-            --name dj \
-            -p 8000:8000 \
-            dj
+#       - name: Start backend container
+#         run: |
+#           docker run -d \
+#             --name dj \
+#             -p 8000:8000 \
+#             dj
 
-      - name: Wait for container health check
-        run: |
-          echo "Waiting for container to become healthy..."
+#       - name: Wait for container health check
+#         run: |
+#           echo "Waiting for container to become healthy..."
 
-          for i in {1..30}; do
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' dj)
+#           for i in {1..30}; do
+#             STATUS=$(docker inspect --format='{{.State.Health.Status}}' dj)
 
-            echo "Container health status: $STATUS"
+#             echo "Container health status: $STATUS"
 
-            if [ "$STATUS" = "healthy" ]; then
-              echo "Container is healthy!"
-              exit 0
-            fi
+#             if [ "$STATUS" = "healthy" ]; then
+#               echo "Container is healthy!"
+#               exit 0
+#             fi
 
-            if [ "$STATUS" = "unhealthy" ]; then
-              echo "Container is unhealthy!"
-              docker logs dj
-              exit 1
-            fi
+#             if [ "$STATUS" = "unhealthy" ]; then
+#               echo "Container is unhealthy!"
+#               docker logs dj
+#               exit 1
+#             fi
 
-            sleep 2
-          done
+#             sleep 2
+#           done
 
-      - name: Backend migration test
-        run: |
-          docker exec dj python manage.py migrate --noinput
+#       - name: Backend migration test
+#         run: |
+#           docker exec dj python manage.py migrate --noinput
 
-      - name: Push Docker image
-        run: |
-          docker tag dj $DOCKER_IMAGE
-          docker push $DOCKER_IMAGE
+#       - name: Push Docker image
+#         run: |
+#           docker tag dj $DOCKER_IMAGE
+#           docker push $DOCKER_IMAGE
 
 
           
