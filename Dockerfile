@@ -19,9 +19,8 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 COPY --from=builder /app /app
 
-RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/', timeout=2)" || exit 1
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "mysite.wsgi:application"]
+CMD ["python","manage.py","runserver"]
 
